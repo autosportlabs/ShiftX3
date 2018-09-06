@@ -61,10 +61,6 @@ static const CANConfig * _select_can_configuration(void)
  */
 static void init_can_gpio(void)
 {
-    // Remap PA11-12 to PA9-10 for CAN
-//        RCC->APB2ENR |= RCC_APB2ENR_SYSCFGCOMPEN;
-    //      SYSCFG->CFGR1 |= SYSCFG_CFGR1_PA11_PA12_RMP;
-
     /* CAN RX.       */
     palSetPadMode(GPIOA, 11, PAL_STM32_MODE_ALTERNATE | PAL_STM32_ALTERNATE(4));
     /* CAN TX.       */
