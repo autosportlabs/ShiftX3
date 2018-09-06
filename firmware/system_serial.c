@@ -1,5 +1,5 @@
 /*
- * OBD2CAN firmware
+ * ShiftX3 firmware
  *
  * Copyright (C) 2018 Autosport Labs
  *
