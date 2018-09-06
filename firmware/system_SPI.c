@@ -31,31 +31,35 @@
  * Low speed SPI configuration (140.625kHz, CPHA=0, CPOL=0, MSb first).
  */
 static const SPIConfig ls_spicfg = {
-    NULL,
-    GPIOB,
-    1,
-    SPI_CR1_BR_2 | SPI_CR1_BR_1 | SPI_CR1_BR_0 | SPI_CR1_CPHA | SPI_CR1_CPOL,
-    SPI_CR2_DS_2 | SPI_CR2_DS_1 | SPI_CR2_DS_0
+        NULL,
+        GPIOB,
+        1,
+        SPI_CR1_BR_2 | SPI_CR1_BR_1 | SPI_CR1_BR_0 | SPI_CR1_CPHA | SPI_CR1_CPOL,
+        SPI_CR2_DS_2 | SPI_CR2_DS_1 | SPI_CR2_DS_0
 };
 
 /* Initialize our CAN peripheral */
 void spi_init(void)
 {
-    /* SPI1_SCK       */
-    palSetPadMode(GPIOA, 5, PAL_STM32_MODE_ALTERNATE | PAL_STM32_ALTERNATE(0));
-    /* SPI1_MISO      */
-    palSetPadMode(GPIOA, 7, PAL_STM32_MODE_ALTERNATE | PAL_STM32_ALTERNATE(0));
+        /* SPI1_SCK       */
+        palSetPadMode(GPIOA, 5, PAL_STM32_MODE_ALTERNATE | PAL_STM32_ALTERNATE(0));
+        /* SPI1_MISO      */
+        palSetPadMode(GPIOA, 7, PAL_STM32_MODE_ALTERNATE | PAL_STM32_ALTERNATE(0));
 }
 
 
 void spi_send_buffer(uint8_t *buffer, size_t length)
 {
-    spiAcquireBus(&SPID1);              /* Acquire ownership of the bus.    */
-    spiStart(&SPID1, &ls_spicfg);       /* Setup transfer parameters.       */
-    spiSelect(&SPID1);                  /* Slave Select assertion.          */
-    spiSend(&SPID1, length, buffer);    /* Atomic transfer operations.      */
-    spiUnselect(&SPID1);                /* Slave Select de-assertion.       */
-    spiReleaseBus(&SPID1);              /* Ownership release.               */
+        spiAcquireBus(&SPID1);              /* Acquire ownership of the bus.    */
+        spiStart(&SPID1, &ls_spicfg);       /* Setup transfer parameters.       */
+        /* We do not need to select the slave; it is the only device on the bus.
+         * otherwise we would add spiSelect(&SPID1);
+         */
+        spiSend(&SPID1, length, buffer);    /* Atomic transfer operations.      */
+        /* We do not need to de-select the slave; it is the only device on the bus.
+         * otherwise we would add spiUnselect(&SPID1);
+         */
+        spiReleaseBus(&SPID1);              /* Ownership release.               */
 //    log_info(_LOG_PFX "Broadcasting SPI\r\n");
 }
 

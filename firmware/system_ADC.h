@@ -1,5 +1,5 @@
 /*
- * ShiftX2 firmware
+ * ShiftX3 firmware
  *
  * Copyright (C) 2016 Autosport Labs
  *

@@ -27,9 +27,9 @@
 
 
 enum logging_levels {
-    logging_level_none,
-    logging_level_info,
-    logging_level_trace
+        logging_level_none,
+        logging_level_info,
+        logging_level_trace
 };
 
 #define log_info(msg, ...) if (get_logging_level() >= logging_level_info) {chprintf((BaseSequentialStream *)&SD2, "%i ", ST2MS(chVTGetSystemTimeX())); chprintf((BaseSequentialStream *)&SD2, msg, ##__VA_ARGS__);}
