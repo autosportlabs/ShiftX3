@@ -61,9 +61,9 @@
 
 static PWMConfig pwmcfg = {
     DISPLAY_PWM_CLOCK_FREQUENCY, /* 200Khz PWM clock frequency*/
-    DISPLAY_PWM_PERIOD, /* PWM period of 1024 ticks ~ 0.005 second */
+    DISPLAY_PWM_PERIOD,
     NULL, /* No callback */
-    /* Only channel 1 enabled */
+    /* Enabled channels */
     {
         {PWM_OUTPUT_ACTIVE_LOW, NULL},
         {PWM_OUTPUT_ACTIVE_LOW, NULL},
