@@ -36,40 +36,40 @@ static bool system_initialized = false;
 /* Get / Set system initialized flag */
 void set_system_initialized(bool initialized)
 {
-        system_initialized = initialized;
+    system_initialized = initialized;
 }
 
 bool get_system_initialized(void)
 {
-        return system_initialized;
+    return system_initialized;
 }
 
 
 /* Broadcast some current stats */
 void broadcast_stats(void)
 {
-        CANTxFrame can_stats;
-        prepare_can_tx_message(&can_stats, CAN_IDE_EXT, get_can_base_id() + API_STATS);
+    CANTxFrame can_stats;
+    prepare_can_tx_message(&can_stats, CAN_IDE_EXT, get_can_base_id() + API_STATS);
 
-        /* these values reserved for future use */
-        can_stats.data8[0] = MAJOR_VER;
-        can_stats.data8[1] = MINOR_VER;
-        can_stats.data8[2] = PATCH_VER;
-        can_stats.DLC = 3;
-        canTransmit(&CAND1, CAN_ANY_MAILBOX, &can_stats, MS2ST(CAN_TRANSMIT_TIMEOUT));
-        log_info(_LOG_PFX "Broadcast stats\r\n");
+    /* these values reserved for future use */
+    can_stats.data8[0] = MAJOR_VER;
+    can_stats.data8[1] = MINOR_VER;
+    can_stats.data8[2] = PATCH_VER;
+    can_stats.DLC = 3;
+    canTransmit(&CAND1, CAN_ANY_MAILBOX, &can_stats, MS2ST(CAN_TRANSMIT_TIMEOUT));
+    log_info(_LOG_PFX "Broadcast stats\r\n");
 }
 
 /* perform a soft reset of this processor */
 void reset_system(void)
 {
-        log_info(_LOG_PFX "Resetting System\r\n");
-        chThdSleepMilliseconds(SYSTEM_RESET_DELAY);
-        NVIC_SystemReset();
+    log_info(_LOG_PFX "Resetting System\r\n");
+    chThdSleepMilliseconds(SYSTEM_RESET_DELAY);
+    NVIC_SystemReset();
 }
 
 /* Check if we're in a state where we need to reset the system */
 void check_system_state(void)
 {
-        /* NOOP for now */
+    /* NOOP for now */
 }

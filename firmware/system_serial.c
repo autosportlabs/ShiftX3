@@ -28,35 +28,35 @@
  */
 size_t serial_getline(SerialDriver *sdp, uint8_t *buf, size_t buf_len)
 {
-        if (!buf || !buf_len)
-                return 0;
+    if (!buf || !buf_len)
+        return 0;
 
-        size_t read = 0;
-        --buf_len; /* account for NULL terminator */
-        while (read < buf_len) {
-                ++read;
-                *buf++ = sdGet(sdp);
-                if ('\r' == buf[-1])
-                        break;
-        }
-        *buf = '\0';
-        return read;
+    size_t read = 0;
+    --buf_len; /* account for NULL terminator */
+    while (read < buf_len) {
+        ++read;
+        *buf++ = sdGet(sdp);
+        if ('\r' == buf[-1])
+            break;
+    }
+    *buf = '\0';
+    return read;
 }
 
 void system_serial_init_SD2(uint32_t speed)
 {
-        static SerialConfig uart_cfg;
-        uart_cfg.speed=speed;
+    static SerialConfig uart_cfg;
+    uart_cfg.speed=speed;
 
-        /* USART2 TX.       */
-        palSetPadMode(GPIOA, 2, PAL_STM32_MODE_ALTERNATE | PAL_STM32_OTYPE_PUSHPULL | PAL_STM32_OSPEED_HIGHEST | PAL_STM32_ALTERNATE(1));
-        /* USART2 RX.       */
-        palSetPadMode(GPIOA, 3, PAL_STM32_MODE_ALTERNATE | PAL_STM32_PUPDR_PULLUP | PAL_STM32_ALTERNATE(1));
-        sdStart(&SD2, &uart_cfg);
+    /* USART2 TX.       */
+    palSetPadMode(GPIOA, 2, PAL_STM32_MODE_ALTERNATE | PAL_STM32_OTYPE_PUSHPULL | PAL_STM32_OSPEED_HIGHEST | PAL_STM32_ALTERNATE(1));
+    /* USART2 RX.       */
+    palSetPadMode(GPIOA, 3, PAL_STM32_MODE_ALTERNATE | PAL_STM32_PUPDR_PULLUP | PAL_STM32_ALTERNATE(1));
+    sdStart(&SD2, &uart_cfg);
 }
 
 /* Initialize our serial subsystem */
 void system_serial_init()
 {
-        system_serial_init_SD2(SD2_BAUD);
+    system_serial_init_SD2(SD2_BAUD);
 }

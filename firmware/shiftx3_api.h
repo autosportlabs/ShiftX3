@@ -14,22 +14,22 @@
 #define ALERT_THRESHOLDS 5
 
 struct AlertThreshold {
-        uint16_t threshold;
-        uint8_t red;
-        uint8_t green;
-        uint8_t blue;
-        uint8_t flash_hz;
+    uint16_t threshold;
+    uint8_t red;
+    uint8_t green;
+    uint8_t blue;
+    uint8_t flash_hz;
 };
 
 enum render_style {
-        RENDER_STYLE_LEFT_RIGHT = 0,
-        RENDER_STYLE_CENTER,
-        RENDER_STYLE_RIGHT_LEFT
+    RENDER_STYLE_LEFT_RIGHT = 0,
+    RENDER_STYLE_CENTER,
+    RENDER_STYLE_RIGHT_LEFT
 };
 
 enum linear_style {
-        LINEAR_STYLE_SMOOTH = 0,
-        LINEAR_STYLE_STEPPED
+    LINEAR_STYLE_SMOOTH = 0,
+    LINEAR_STYLE_STEPPED
 };
 
 /*Linear Graph Configuration */
@@ -40,32 +40,32 @@ enum linear_style {
 #define DEFAULT_LINEAR_GRAPH_FLASH  0
 
 struct LedFlashConfig {
-        uint8_t current_state;
-        uint8_t flash_hz;
+    uint8_t current_state;
+    uint8_t flash_hz;
 };
 
 struct LinearGraphConfig {
-        enum render_style render_style;
-        enum linear_style linear_style;
-        uint16_t low_range;
-        uint16_t high_range;
+    enum render_style render_style;
+    enum linear_style linear_style;
+    uint16_t low_range;
+    uint16_t high_range;
 };
 
 struct LinearGraphThreshold {
-        uint8_t segment_length;
-        uint16_t threshold;
-        uint8_t red;
-        uint8_t green;
-        uint8_t blue;
-        uint8_t flash_hz;
+    uint8_t segment_length;
+    uint16_t threshold;
+    uint8_t red;
+    uint8_t green;
+    uint8_t blue;
+    uint8_t flash_hz;
 };
 
 #define DEFAULT_BRIGHTNESS              0
 #define DEFAULT_LIGHT_SENSOR_SCALING    51
 
 struct ConfigGroup1 {
-        uint8_t brightness;
-        uint8_t light_sensor_scaling;
+    uint8_t brightness;
+    uint8_t light_sensor_scaling;
 };
 
 /* API offsets */

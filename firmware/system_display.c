@@ -60,24 +60,23 @@
 #define DISPLAY_PWM_PERCENT_SCALING 27
 
 static PWMConfig pwmcfg = {
-        DISPLAY_PWM_CLOCK_FREQUENCY, /* 200Khz PWM clock frequency*/
-        DISPLAY_PWM_PERIOD, /* PWM period of 1024 ticks ~ 0.005 second */
-        NULL, /* No callback */
-        /* Only channel 1 enabled */
-        {
-                {PWM_OUTPUT_ACTIVE_LOW, NULL},
-                {PWM_OUTPUT_ACTIVE_LOW, NULL},
-                {PWM_OUTPUT_ACTIVE_LOW, NULL},
-                {PWM_OUTPUT_ACTIVE_LOW, NULL}
-        },
-        0,
-        0
+    DISPLAY_PWM_CLOCK_FREQUENCY, /* 200Khz PWM clock frequency*/
+    DISPLAY_PWM_PERIOD, /* PWM period of 1024 ticks ~ 0.005 second */
+    NULL, /* No callback */
+    /* Only channel 1 enabled */
+    {
+        {PWM_OUTPUT_ACTIVE_LOW, NULL},
+        {PWM_OUTPUT_ACTIVE_LOW, NULL},
+        {PWM_OUTPUT_ACTIVE_LOW, NULL},
+        {PWM_OUTPUT_ACTIVE_LOW, NULL}
+    },
+    0,
+    0
 };
 
-struct port_pin
-{
-        stm32_gpio_t * port;
-        uint8_t pin;
+struct port_pin {
+    stm32_gpio_t * port;
+    uint8_t pin;
 };
 
 #define DISPLAY_SEGMENT_COUNT 7
@@ -163,8 +162,8 @@ static const struct port_pin display_port_mappings[DISPLAY_SEGMENT_COUNT] = DISP
 }
 
 struct char_segment {
-        char character;
-        uint8_t bitmask;
+    char character;
+    uint8_t bitmask;
 };
 
 
@@ -174,81 +173,75 @@ static const struct char_segment character_mappings[] = CHARMAP;
 
 void display_set_segment(const uint8_t digit, const uint8_t segment, const bool enabled)
 {
-        log_trace(_LOG_PFX "set segment %d: %d %d\r\n", digit, segment, enabled);
-        if (segment >= DISPLAY_SEGMENT_COUNT)
-                return;
+    log_trace(_LOG_PFX "set segment %d: %d %d\r\n", digit, segment, enabled);
+    if (segment >= DISPLAY_SEGMENT_COUNT)
+        return;
 
-        const struct port_pin *mapping = &display_port_mappings[segment];
+    const struct port_pin *mapping = &display_port_mappings[segment];
 
-        if (enabled){
-                palClearPad(mapping->port, mapping->pin);
-        }
-        else{
-                palSetPad(mapping->port, mapping->pin);
-        }
+    if (enabled) {
+        palClearPad(mapping->port, mapping->pin);
+    } else {
+        palSetPad(mapping->port, mapping->pin);
+    }
 }
 
 void display_set_value(const uint8_t digit, const char value)
 {
-        log_trace(_LOG_PFX "set value %d: %c\r\n", digit, value);
+    log_trace(_LOG_PFX "set value %d: %c\r\n", digit, value);
 
-        for (size_t i = 0; i < CHARMAP_COUNT;i++)
-        {
-                const struct char_segment * mapping = & character_mappings[i];
-                if (mapping->character == value) {
-                        uint8_t bitmask = mapping->bitmask;
-                        uint8_t segment = DISPLAY_SEGMENT_COUNT;
-                        while (segment > 0)
-                        {
-                                segment--;
-                                display_set_segment(digit, segment, bitmask & 0x01);
-                                bitmask = bitmask >> 1;
-                        }
-                        break;
-                }
+    for (size_t i = 0; i < CHARMAP_COUNT; i++) {
+        const struct char_segment * mapping = & character_mappings[i];
+        if (mapping->character == value) {
+            uint8_t bitmask = mapping->bitmask;
+            uint8_t segment = DISPLAY_SEGMENT_COUNT;
+            while (segment > 0) {
+                segment--;
+                display_set_segment(digit, segment, bitmask & 0x01);
+                bitmask = bitmask >> 1;
+            }
+            break;
         }
+    }
 }
 
 static void _clear_display(void)
 {
-        for (size_t d = 0; d < DISPLAY_DIGITS; d++)
-        {
-                for (size_t i = 0; i < DISPLAY_SEGMENT_COUNT; i++)
-                {
-                        display_set_segment(d, i, false);
-                }
+    for (size_t d = 0; d < DISPLAY_DIGITS; d++) {
+        for (size_t i = 0; i < DISPLAY_SEGMENT_COUNT; i++) {
+            display_set_segment(d, i, false);
         }
+    }
 }
 
 void system_display_init(void)
 {
 
-        /* init ports for segments */
-        for (size_t i = 0; i < DISPLAY_SEGMENT_COUNT; i++) {
-                const struct port_pin *mapping = &display_port_mappings[i];
-                palSetPadMode(mapping->port, mapping->pin, PAL_MODE_OUTPUT_OPENDRAIN);
-        }
+    /* init ports for segments */
+    for (size_t i = 0; i < DISPLAY_SEGMENT_COUNT; i++) {
+        const struct port_pin *mapping = &display_port_mappings[i];
+        palSetPadMode(mapping->port, mapping->pin, PAL_MODE_OUTPUT_OPENDRAIN);
+    }
 
-        /* init PWM for display brightness control */
-        palSetPadMode(DISPLAY_PWM_CONTROL_PORT, DISPLAY_PWM_CONTROL_PIN, PAL_MODE_ALTERNATE(1));
-        pwmStart(&PWMD3, &pwmcfg);
-        _clear_display();
+    /* init PWM for display brightness control */
+    palSetPadMode(DISPLAY_PWM_CONTROL_PORT, DISPLAY_PWM_CONTROL_PIN, PAL_MODE_ALTERNATE(1));
+    pwmStart(&PWMD3, &pwmcfg);
+    _clear_display();
 }
 
 void display_update_brightness(void)
 {
-        uint16_t brightness = get_brightness();
-        if (brightness) {
-                brightness = DISPLAY_PWM_OFFSET + (brightness * DISPLAY_PWM_PERCENT_SCALING);
-                log_trace(_LOG_PFX "User brightness: %d\r\n", brightness);
-        }
-        else {
-                uint16_t light_sensor = system_adc_sample();
-                uint8_t user_scaling = get_light_sensor_scaling();
-                brightness = DISPLAY_PWM_OFFSET + (light_sensor * user_scaling / DISPLAY_PWM_SCALING);
-                log_trace(_LOG_PFX "Auto brightness: Sensor ADC/scaling/brightness %d/%d/%d\r\n", light_sensor, user_scaling, brightness);
-        }
-        brightness = brightness > DISPLAY_MAX_BRIGHTNESS ? DISPLAY_MAX_BRIGHTNESS : brightness;
-        brightness = brightness < DISPLAY_MIN_BRIGHTNESS ? DISPLAY_MIN_BRIGHTNESS : brightness;
-        pwmEnableChannel(&PWMD3, 2, brightness);
+    uint16_t brightness = get_brightness();
+    if (brightness) {
+        brightness = DISPLAY_PWM_OFFSET + (brightness * DISPLAY_PWM_PERCENT_SCALING);
+        log_trace(_LOG_PFX "User brightness: %d\r\n", brightness);
+    } else {
+        uint16_t light_sensor = system_adc_sample();
+        uint8_t user_scaling = get_light_sensor_scaling();
+        brightness = DISPLAY_PWM_OFFSET + (light_sensor * user_scaling / DISPLAY_PWM_SCALING);
+        log_trace(_LOG_PFX "Auto brightness: Sensor ADC/scaling/brightness %d/%d/%d\r\n", light_sensor, user_scaling, brightness);
+    }
+    brightness = brightness > DISPLAY_MAX_BRIGHTNESS ? DISPLAY_MAX_BRIGHTNESS : brightness;
+    brightness = brightness < DISPLAY_MIN_BRIGHTNESS ? DISPLAY_MIN_BRIGHTNESS : brightness;
+    pwmEnableChannel(&PWMD3, 2, brightness);
 }
