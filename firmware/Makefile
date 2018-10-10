@@ -24,7 +24,7 @@
 
 # Compiler options here.
 ifeq ($(USE_OPT),)
-  USE_OPT = -Os -ggdb -fomit-frame-pointer -falign-functions=16
+  USE_OPT = -Os -ggdb -fomit-frame-pointer -falign-functions=16 -std=c99
 endif
 
 # C specific options here (added to USE_OPT).
@@ -141,8 +141,9 @@ CSRC = $(STARTUPSRC) \
        main.c \
        system_CAN.c \
        system_button.c \
+       system_display.c \
        system_ADC.c \
-       shiftx2_api.c \
+       shiftx3_api.c \
        system_LED.c \
        logging.c
 

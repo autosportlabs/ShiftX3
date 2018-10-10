@@ -1,7 +1,7 @@
 /*
- * OBD2CAN firmware
+ * ShiftX3 firmware
  *
- * Copyright (C) 2016 Autosport Labs
+ * Copyright (C) 2018 Autosport Labs
  *
  * This file is part of the Race Capture firmware suite
  *
@@ -52,9 +52,13 @@ void spi_send_buffer(uint8_t *buffer, size_t length)
 {
     spiAcquireBus(&SPID1);              /* Acquire ownership of the bus.    */
     spiStart(&SPID1, &ls_spicfg);       /* Setup transfer parameters.       */
-    spiSelect(&SPID1);                  /* Slave Select assertion.          */
+    /* We do not need to select the slave; it is the only device on the bus.
+     * otherwise we would add spiSelect(&SPID1);
+     */
     spiSend(&SPID1, length, buffer);    /* Atomic transfer operations.      */
-    spiUnselect(&SPID1);                /* Slave Select de-assertion.       */
+    /* We do not need to de-select the slave; it is the only device on the bus.
+     * otherwise we would add spiUnselect(&SPID1);
+     */
     spiReleaseBus(&SPID1);              /* Ownership release.               */
 //    log_info(_LOG_PFX "Broadcasting SPI\r\n");
 }

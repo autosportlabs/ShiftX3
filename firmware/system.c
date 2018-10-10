@@ -1,7 +1,7 @@
 /*
- * ShiftX2 firmware
+ * ShiftX3 firmware
  *
- * Copyright (C) 2016 Autosport Labs
+ * Copyright (C) 2018 Autosport Labs
  *
  * This file is part of the Race Capture firmware suite
  *
@@ -24,8 +24,8 @@
 #include "ch.h"
 #include "hal.h"
 #include "logging.h"
+#include "shiftx3_api.h"
 #include "system_CAN.h"
-#include "shiftx2_api.h"
 
 #define _LOG_PFX "SYS:         "
 

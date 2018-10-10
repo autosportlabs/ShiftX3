@@ -1,7 +1,7 @@
 /*
- * OBD2CAN firmware
+ * ShiftX3 firmware
  *
- * Copyright (C) 2016 Autosport Labs
+ * Copyright (C) 2018 Autosport Labs
  *
  * This file is part of the Race Capture firmware suite
  *
@@ -23,16 +23,16 @@
 #include "logging.h"
 #include "system_serial.h"
 #include "settings.h"
+#include "shiftx3_api.h"
 #include "system.h"
 #include "stm32f042x6.h"
-#include "shiftx2_api.h"
 
 #define _LOG_PFX "SYS_CAN:     "
 
 #define CAN_WORKER_STARTUP_DELAY 500
 #define ADR1_ADDRESS_PORT 0
 #define ADR2_BAUD_PORT 4
-static uint32_t g_can_base_address = SHIFTX2_CAN_BASE_ID;
+static uint32_t g_can_base_address = SHIFTX3_CAN_BASE_ID;
 
 /*
  * 500K baud; 36MHz clock
@@ -61,10 +61,6 @@ static const CANConfig * _select_can_configuration(void)
  */
 static void init_can_gpio(void)
 {
-    // Remap PA11-12 to PA9-10 for CAN
-    RCC->APB2ENR |= RCC_APB2ENR_SYSCFGCOMPEN;
-    SYSCFG->CFGR1 |= SYSCFG_CFGR1_PA11_PA12_RMP;
-
     /* CAN RX.       */
     palSetPadMode(GPIOA, 11, PAL_STM32_MODE_ALTERNATE | PAL_STM32_ALTERNATE(4));
     /* CAN TX.       */
@@ -74,8 +70,8 @@ static void init_can_gpio(void)
     canStart(&CAND1, _select_can_configuration());
 
     // Disable CAN filtering for now until we can verify proper operation / settings.
-    // CANFilter shiftx2_can_filter = {1, 0, 1, 0, 0x000E3700, 0x1FFFFF00}; // g_can_base_address, SHIFTX2_CAN_FILTER_MASK
-    //canSTM32SetFilters(1, 1, &shiftx2_can_filter);
+    // CANFilter shiftx3_can_filter = {1, 0, 1, 0, 0x000E3700, 0x1FFFFF00}; // g_can_base_address, SHIFTX3_CAN_FILTER_MASK
+    //canSTM32SetFilters(1, 1, &shiftx3_can_filter);
 
 }
 
@@ -89,7 +85,7 @@ static void init_can_operating_parameters(void)
     palSetPadMode(GPIOA, ADR2_BAUD_PORT, PAL_STM32_MODE_INPUT | PAL_STM32_PUPDR_PULLUP);
 
     if (palReadPad(GPIOA, ADR1_ADDRESS_PORT) == PAL_HIGH) {
-        g_can_base_address += SHIFTX2_CAN_API_RANGE;
+        g_can_base_address += SHIFTX3_CAN_API_RANGE;
     }
 }
 
@@ -134,6 +130,12 @@ static bool dispatch_can_rx(CANRxFrame *rx_msg)
         break;
     case API_SET_CURRENT_LINEAR_GRAPH_VALUE:
         api_set_current_linear_graph_value(rx_msg);
+        break;
+    case API_SET_DISPLAY_VALUE:
+        api_set_display_value(rx_msg);
+        break;
+    case API_SET_DISPLAY_SEGMENT:
+        api_set_display_segment(rx_msg);
         break;
     default:
         return false;

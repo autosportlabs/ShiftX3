@@ -1,7 +1,7 @@
 /*
- * ShiftX2 firmware
+ * ShiftX3 firmware
  *
- * Copyright (C) 2016 Autosport Labs
+ * Copyright (C) 2018 Autosport Labs
  *
  * This file is part of the Race Capture firmware suite
  *
@@ -23,12 +23,14 @@
 #include "hal.h"
 #include "settings.h"
 #include "logging.h"
+#include "shiftx3_api.h"
 #include "system.h"
 #include "system_serial.h"
 #include "system_CAN.h"
 #include "system_LED.h"
 #include "system_ADC.h"
 #include "system_button.h"
+#include "system_display.h"
 
 #define CAN_THREAD_STACK 512
 #define LED_THREAD_STACK 256
@@ -110,6 +112,8 @@ int main(void)
     system_can_init();
     system_adc_init();
     system_serial_init();
+    system_display_init();
+    api_initialize();
 
     /*
      * Creates the processing threads.
@@ -128,6 +132,7 @@ int main(void)
             stats_check = 0;
         }
         button_check_broadcast_state();
+        display_update_brightness();
         if (WATCHDOG_ENABLED)
             wdgReset(&WDGD1);
         check_system_state();

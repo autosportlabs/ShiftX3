@@ -1,7 +1,7 @@
 /*
- * ShiftX2 firmware
+ * ShiftX3 firmware
  *
- * Copyright (C) 2016 Autosport Labs
+ * Copyright (C) 2018 Autosport Labs
  *
  * This file is part of the Race Capture firmware suite
  *
@@ -26,7 +26,6 @@
 #include "hal.h"
 
 void button_init(void);
-bool button_is_pressed(void);
 void button_check_broadcast_state(void);
 
 #endif /* ADC_H_ */

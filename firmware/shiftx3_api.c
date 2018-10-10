@@ -1,12 +1,28 @@
 /*
- * shiftx2_api.c
+ * ShiftX3 firmware
  *
- *  Created on: Feb 4, 2017
- *      Author: brent
+ * Copyright (C) 2018 Autosport Labs
+ *
+ * This file is part of the Race Capture firmware suite
+ *
+ * This is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * See the GNU General Public License for more details. You should
+ * have received a copy of the GNU General Public License along with
+ * this code. If not, see <http://www.gnu.org/licenses/>.
  */
+#include "shiftx3_api.h"
+
 #include "logging.h"
 #include "system_LED.h"
-#include "shiftx2_api.h"
+#include "system_display.h"
 #include "settings.h"
 #include "ch.h"
 #include "hal.h"
@@ -280,9 +296,15 @@ void api_set_config_group_1(CANRxFrame *rx_msg)
         return;
     }
     uint32_t brightness = rx_msg->data8[0];
-    /* scale percentage to internal APA102 brightness factor and rail to limits */
-    brightness = APA102_MAX_BRIGHTNESS * brightness / 100;
-    brightness = brightness > APA102_MAX_BRIGHTNESS ? APA102_MAX_BRIGHTNESS : brightness;
+    if (brightness > 0) {
+        /**
+         * User specified a brightness.
+         * Scale percentage to internal APA102 brightness factor and rail to limits
+         */
+        brightness = APA102_MAX_BRIGHTNESS * brightness / 100;
+        brightness = min(APA102_MAX_BRIGHTNESS, brightness);
+        brightness = max(1, brightness);
+    }
 
     _set_brightness(brightness);
     log_trace(_LOG_PFX "Set config group 1 : brightness(%i)\r\n", brightness);
@@ -293,7 +315,6 @@ void api_set_config_group_1(CANRxFrame *rx_msg)
         log_trace(_LOG_PFX "Set config group 1: light sensor scaling: %i\r\n", scaling);
     }
 }
-
 void api_set_discrete_led(CANRxFrame *rx_msg)
 {
     if (rx_msg->DLC < 6) {
@@ -492,3 +513,30 @@ void api_send_announcement(void)
     canTransmit(&CAND1, CAN_ANY_MAILBOX, &announce, MS2ST(CAN_TRANSMIT_TIMEOUT));
     log_info(_LOG_PFX "Broadcast announcement\r\n");
 }
+
+void api_set_display_value(CANRxFrame *rx_msg)
+{
+    if (rx_msg->DLC < 2) {
+        log_info(_LOG_PFX "Invalid param count for set display value\r\n");
+        return;
+    }
+    uint8_t digit = rx_msg->data8[0];
+    char value = (char)rx_msg->data8[1];
+    display_set_value(digit, value);
+}
+
+void api_set_display_segment(CANRxFrame *rx_msg)
+{
+    if (rx_msg->DLC < 8) {
+        log_info(_LOG_PFX "Invalid param count for set display segment\r\n");
+        return;
+    }
+    uint8_t digit = rx_msg->data8[0];
+
+    for (size_t i = 1; i < 8; i++) {
+        uint8_t segment = rx_msg->data8[i];
+        bool enabled = segment != 0;
+        display_set_segment(digit, i - 1, enabled);
+    }
+}
+

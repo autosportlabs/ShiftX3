@@ -1,7 +1,7 @@
 /*
- * OBD2CAN firmware
+ * ShiftX3 firmware
  *
- * Copyright (C) 2016 Autosport Labs
+ * Copyright (C) 2018 Autosport Labs
  *
  * This file is part of the Race Capture firmware suite
  *
@@ -21,7 +21,7 @@
 #include "system_LED.h"
 #include "system_SPI.h"
 #include "logging.h"
-#include "shiftx2_api.h"
+#include "shiftx3_api.h"
 #include "system_ADC.h"
 
 #define _LOG_PFX "LED:     "
@@ -73,7 +73,6 @@ void led_worker(void)
 {
     log_info(_LOG_PFX "Starting LED worker\r\n");
     chRegSetThreadName("LED worker");
-    api_initialize();
     spi_init();
     _init_leds(APA102_DEFAULT_BRIGHTNESS, 0x00, 0x00, 0x00);
     while(!chThdShouldTerminateX()) {
@@ -89,7 +88,7 @@ uint8_t _calculate_auto_brightness(void)
     uint16_t brightness = light_sensor * scaling / 100;
     brightness = brightness > APA102_MAX_BRIGHTNESS ? APA102_MAX_BRIGHTNESS : brightness;
     brightness = brightness < APA102_MIN_BRIGHTNESS ? APA102_MIN_BRIGHTNESS : brightness;
-    log_trace(_LOG_PFX "Auto brightness: Sensor ADC/scaling/brightness %d/%d/%d", light_sensor, scaling, brightness);
+    log_trace(_LOG_PFX "Auto brightness: Sensor ADC/scaling/brightness %d/%d/%d\r\n", light_sensor, scaling, brightness);
     return (uint8_t)brightness;
 }
 

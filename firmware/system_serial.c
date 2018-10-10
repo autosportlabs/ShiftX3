@@ -1,7 +1,7 @@
 /*
- * OBD2CAN firmware
+ * ShiftX3 firmware
  *
- * Copyright (C) 2016 Autosport Labs
+ * Copyright (C) 2018 Autosport Labs
  *
  * This file is part of the Race Capture firmware suite
  *
@@ -43,9 +43,6 @@ size_t serial_getline(SerialDriver *sdp, uint8_t *buf, size_t buf_len)
     return read;
 }
 
-/*
- * Initialize connection for SD2 (STN1110)
- */
 void system_serial_init_SD2(uint32_t speed)
 {
     static SerialConfig uart_cfg;
