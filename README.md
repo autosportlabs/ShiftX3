@@ -241,7 +241,7 @@ Most alphanumeric characters are supported as well, also via ASCII representatio
 ### Set Segment
 Discretely set segments on the display
 
-CAN ID: Base + 50
+CAN ID: Base + 51
 
 ```
 Offset  What                       Value
@@ -269,7 +269,7 @@ CAN ID: Base + 60
 ```
 Offset  What                       Value
 ======================================================================
-0	Button state	           1 = button is pressed; 0 = button
+0	Button state	           1 = button is pressed; 0 = button not pressed
 0	Button ID    	           Id of button activated. 0 = left button; 1 = right button
 ```
 
