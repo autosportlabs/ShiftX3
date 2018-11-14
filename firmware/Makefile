@@ -1,4 +1,4 @@
-# OBD2CAN firmware
+# ShiftX3 firmware
 #
 # Copyright (C) 2016 Autosport Labs
 #
@@ -121,7 +121,7 @@ STREAMSSRC = 	$(CHIBIOS)/os/hal/lib/streams/chprintf.c \
 STREAMSINC = $(CHIBIOS)/os/hal/lib/streams
 
 # Define linker script file here
-LDSCRIPT= $(STARTUPLD)/STM32F072xB.ld
+LDSCRIPT= $(STARTUPLD)/STM32F042x6.ld
 
 # C sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.

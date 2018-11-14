@@ -168,8 +168,13 @@ static void _update_linear_graph_value(void)
     uint32_t range = high_range - low_range;
 
     uint16_t current_value = g_current_linear_graph_value;
+    uint16_t range_adj_value;
     /* offset to zero */
-    current_value -= low_range;
+    if ( current_value < low_range ) {
+        range_adj_value = 0;
+    } else {
+        range_adj_value = current_value - low_range;
+    }
 
     enum linear_style lstyle = g_linear_graph_config.linear_style;
     enum render_style rstyle = g_linear_graph_config.render_style;
@@ -182,11 +187,11 @@ static void _update_linear_graph_value(void)
     }
     switch (rstyle) {
     case RENDER_STYLE_CENTER:
-        _update_center_graph(current_value, range, threshold, lstyle);
+        _update_center_graph(range_adj_value, range, threshold, lstyle);
         break;
     case RENDER_STYLE_LEFT_RIGHT:
     case RENDER_STYLE_RIGHT_LEFT:
-        _update_linear_graph(current_value, range, threshold, LINEAR_GRAPH_COUNT, LINEAR_GRAPH_OFFSET, lstyle, left_right);
+        _update_linear_graph(range_adj_value, range, threshold, LINEAR_GRAPH_COUNT, LINEAR_GRAPH_OFFSET, lstyle, left_right);
         break;
     default:
         log_info(_LOG_PFX "Invalid render style (%i)\r\n", rstyle);
