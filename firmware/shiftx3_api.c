@@ -37,7 +37,7 @@ static struct LinearGraphThreshold g_linear_graph_threshold[LINEAR_GRAPH_THRESHO
 static uint16_t g_current_linear_graph_value;
 static struct LedFlashConfig g_flash_config[LED_COUNT];
 
-static struct ConfigGroup1 g_config_group_1 = {DEFAULT_BRIGHTNESS, DEFAULT_LIGHT_SENSOR_SCALING};
+static struct ConfigGroup1 g_config_group_1 = {DEFAULT_BRIGHTNESS, DEFAULT_LIGHT_SENSOR_SCALING, DEFAULT_ORIENTATION};
 
 static bool g_provisioned = false;
 
@@ -69,8 +69,9 @@ static void _update_alert_value(uint8_t alert_id)
         blue = t->blue;
         flash = t->flash_hz;
     }
-    set_led(ALERT_OFFSET + alert_id, red, green, blue);
-    set_flash_config(ALERT_OFFSET + alert_id, flash);
+    uint8_t disp_led_idx = (get_orientation() == DISPLAY_BOTTOM) ? alert_id : (ALERT_COUNT - alert_id - 1);
+    set_led(ALERT_OFFSET + disp_led_idx, red, green, blue);
+    set_flash_config(ALERT_OFFSET + disp_led_idx, flash);
 }
 
 static struct LinearGraphThreshold * _select_linear_threshold(uint16_t value)
@@ -108,8 +109,9 @@ static void _update_linear_graph(uint16_t value, uint16_t range, struct LinearGr
 
     size_t i;
     uint8_t led_index = 0;
+    bool render_lr = left_right != (get_orientation() == DISPLAY_TOP); // Logical XOR
     for (i = 0; i < graph_size; i++) {
-        if (left_right) {
+        if (render_lr) {
             led_index = start_offset + i;
         } else {
             led_index = (start_offset + graph_size - 1) - i;
@@ -129,7 +131,7 @@ static void _update_linear_graph(uint16_t value, uint16_t range, struct LinearGr
         red = red * remainder / 100;
         green = green * remainder / 100;
         blue = blue * remainder / 100;
-        led_index = (left_right) ?
+        led_index = (render_lr) ?
                     start_offset + graph_length :
                     (start_offset + graph_size - 1) - graph_length;
         set_led(led_index, red, green, blue);
@@ -151,13 +153,15 @@ static void _update_center_graph(uint16_t value, uint16_t range, struct LinearGr
         for (index = 0; index < center_led; index++) {
             set_led(index, 0, 0, 0);
         }
-        _update_linear_graph(value - center_value, range / 2, threshold, graph_count, center_led, lstyle, true);
+        uint8_t offset = (get_orientation() == DISPLAY_BOTTOM) ? center_led : 0;
+        _update_linear_graph(value - center_value, range / 2, threshold, graph_count, offset, lstyle, true);
     } else { /* right to left rendering */
         /* turn off LEDs right of center */
         for (index = center_led; index < LINEAR_GRAPH_COUNT; index++) {
             set_led(index, 0, 0, 0);
         }
-        _update_linear_graph(center_value - value, range / 2, threshold, graph_count, 0, lstyle, false);
+        uint8_t offset = (get_orientation() == DISPLAY_BOTTOM) ? 0 : center_led;
+        _update_linear_graph(center_value - value, range / 2, threshold, graph_count, offset, lstyle, false);
     }
 }
 
@@ -279,6 +283,16 @@ uint8_t get_light_sensor_scaling(void)
     return g_config_group_1.light_sensor_scaling;
 }
 
+static void _set_orientation(enum orientation orientation) 
+{
+    g_config_group_1.orientation = orientation;
+}
+
+enum orientation get_orientation(void)
+{
+    return g_config_group_1.orientation;
+}
+
 struct LedFlashConfig * get_flash_config(size_t led_index)
 {
     return &g_flash_config[led_index];
@@ -288,6 +302,7 @@ void set_flash_config(size_t led_index, uint8_t flash_hz)
 {
     g_flash_config[led_index].flash_hz = flash_hz;
 }
+
 
 void api_set_config_group_1(CANRxFrame *rx_msg)
 {
@@ -314,7 +329,19 @@ void api_set_config_group_1(CANRxFrame *rx_msg)
         _set_light_sensor_scaling(scaling);
         log_trace(_LOG_PFX "Set config group 1: light sensor scaling: %i\r\n", scaling);
     }
+
+    if (rx_msg->DLC >= 3) {
+
+        uint8_t orientation = rx_msg->data8[2];
+        if (orientation > DISPLAY_TOP) {
+            log_info(_LOG_PFX "Invalid display orientation %i specified\r\n", orientation);
+        } else {
+            _set_orientation(orientation);
+            log_trace(_LOG_PFX "Set config group 1: orientation: %i\r\n", orientation);
+        }
+    }
 }
+
 void api_set_discrete_led(CANRxFrame *rx_msg)
 {
     if (rx_msg->DLC < 6) {
@@ -358,8 +385,9 @@ void api_set_alert_led(CANRxFrame *rx_msg)
     uint8_t flash = rx_msg->data8[4];
 
     log_trace(_LOG_PFX "Set Alert LED (%i) : rgb(%i, %i, %i) flash(%i)\r\n", alert_id, red, green, blue, flash);
-    set_led(ALERT_OFFSET + alert_id, red, green, blue);
-    set_flash_config(ALERT_OFFSET + alert_id, flash);
+    uint8_t disp_led_idx = (get_orientation() == DISPLAY_BOTTOM) ? alert_id : (ALERT_COUNT - alert_id - 1);
+    set_led(ALERT_OFFSET + disp_led_idx, red, green, blue);
+    set_flash_config(ALERT_OFFSET + disp_led_idx, flash);
 }
 
 void api_set_alert_threshold(CANRxFrame *rx_msg)
@@ -539,4 +567,3 @@ void api_set_display_segment(CANRxFrame *rx_msg)
         display_set_segment(digit, i - 1, enabled);
     }
 }
-

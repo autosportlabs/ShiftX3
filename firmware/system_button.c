@@ -48,9 +48,10 @@ static void _broadcast_button_state(uint8_t button_id, bool pressed)
     CANTxFrame can_stats;
     prepare_can_tx_message(&can_stats, CAN_IDE_EXT, get_can_base_id() + API_ALERT_BUTTON_STATES);
 
+    uint8_t report_id = (get_orientation() == DISPLAY_BOTTOM) ? button_id : BUTTON_COUNT - button_id - 1;
     /* these values reserved for future use */
     can_stats.data8[0] = pressed;
-    can_stats.data8[1] = button_id;
+    can_stats.data8[1] = report_id;
     can_stats.DLC = 2;
     canTransmit(&CAND1, CAN_ANY_MAILBOX, &can_stats, MS2ST(CAN_TRANSMIT_TIMEOUT));
     log_trace(_LOG_PFX "Broadcast button_states\r\n");

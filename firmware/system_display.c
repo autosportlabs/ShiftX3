@@ -80,16 +80,25 @@ struct port_pin {
 };
 
 #define DISPLAY_SEGMENT_COUNT 7
-#define DISPLAY_SEGMENT_MAPPING {{DISPLAY_SEGMENT_A_PORT, DISPLAY_SEGMENT_A_PIN}, \
+#define DISPLAY_SEGMENT_BOTTOM_MAPPING {{DISPLAY_SEGMENT_A_PORT, DISPLAY_SEGMENT_A_PIN}, \
                            {DISPLAY_SEGMENT_B_PORT, DISPLAY_SEGMENT_B_PIN}, \
                            {DISPLAY_SEGMENT_C_PORT, DISPLAY_SEGMENT_C_PIN}, \
                            {DISPLAY_SEGMENT_D_PORT, DISPLAY_SEGMENT_D_PIN}, \
                            {DISPLAY_SEGMENT_E_PORT, DISPLAY_SEGMENT_E_PIN}, \
                            {DISPLAY_SEGMENT_F_PORT, DISPLAY_SEGMENT_F_PIN}, \
                            {DISPLAY_SEGMENT_G_PORT, DISPLAY_SEGMENT_G_PIN}, \
-};
+}
+#define DISPLAY_SEGMENT_TOP_MAPPING {{DISPLAY_SEGMENT_D_PORT, DISPLAY_SEGMENT_D_PIN}, \
+                           {DISPLAY_SEGMENT_E_PORT, DISPLAY_SEGMENT_E_PIN}, \
+                           {DISPLAY_SEGMENT_F_PORT, DISPLAY_SEGMENT_F_PIN}, \
+                           {DISPLAY_SEGMENT_A_PORT, DISPLAY_SEGMENT_A_PIN}, \
+                           {DISPLAY_SEGMENT_B_PORT, DISPLAY_SEGMENT_B_PIN}, \
+                           {DISPLAY_SEGMENT_C_PORT, DISPLAY_SEGMENT_C_PIN}, \
+                           {DISPLAY_SEGMENT_G_PORT, DISPLAY_SEGMENT_G_PIN}, \
+}
 
-static const struct port_pin display_port_mappings[DISPLAY_SEGMENT_COUNT] = DISPLAY_SEGMENT_MAPPING;
+static const struct port_pin display_port_mappings[DISPLAY_ORIENTATIONS][DISPLAY_SEGMENT_COUNT] = 
+    {DISPLAY_SEGMENT_BOTTOM_MAPPING, DISPLAY_SEGMENT_TOP_MAPPING};
 
 #define CHARMAP { \
         {'0',0x7E}, \
@@ -173,11 +182,12 @@ static const struct char_segment character_mappings[] = CHARMAP;
 
 void display_set_segment(const uint8_t digit, const uint8_t segment, const bool enabled)
 {
-    log_trace(_LOG_PFX "set segment %d: %d %d\r\n", digit, segment, enabled);
+    const enum orientation orientation = get_orientation();
+    log_trace(_LOG_PFX "set segment %d: %d %d %d\r\n", digit, segment, enabled, orientation);
     if (segment >= DISPLAY_SEGMENT_COUNT)
         return;
 
-    const struct port_pin *mapping = &display_port_mappings[segment];
+    const struct port_pin *mapping = &display_port_mappings[orientation][segment];
 
     if (enabled) {
         palClearPad(mapping->port, mapping->pin);
@@ -219,7 +229,7 @@ void system_display_init(void)
 
     /* init ports for segments */
     for (size_t i = 0; i < DISPLAY_SEGMENT_COUNT; i++) {
-        const struct port_pin *mapping = &display_port_mappings[i];
+        const struct port_pin *mapping = &display_port_mappings[DISPLAY_BOTTOM][i];
         palSetPadMode(mapping->port, mapping->pin, PAL_MODE_OUTPUT_OPENDRAIN);
     }
 
