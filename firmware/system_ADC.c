@@ -75,7 +75,6 @@ void system_adc_init(void)
     adcStart(&ADCD1, NULL);
     //  adcSTM32SetCCR(ADC_CCR_VBATEN | ADC_CCR_TSEN | ADC_CCR_VREFEN);
     /* start continuous conversion */
-    log_info("adc init\r\n");
 }
 
 uint16_t system_adc_sample(void)

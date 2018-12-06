@@ -115,6 +115,8 @@ int main(void)
     system_display_init();
     api_initialize();
 
+    log_info("===ShiftX3 START (Version %u.%u.%u)===\r\n", MAJOR_VER, MINOR_VER, PATCH_VER);
+
     /*
      * Creates the processing threads.
      */
