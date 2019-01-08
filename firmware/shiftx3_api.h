@@ -46,6 +46,11 @@ enum linear_style {
     LINEAR_STYLE_STEPPED
 };
 
+enum orientation {
+    DISPLAY_BOTTOM = 0,
+    DISPLAY_TOP
+};
+
 /*Linear Graph Configuration */
 #define LINEAR_GRAPH_THRESHOLDS 5
 #define DEFAULT_LINEAR_GRAPH_COLOR_RED  0
@@ -76,10 +81,13 @@ struct LinearGraphThreshold {
 
 #define DEFAULT_BRIGHTNESS              0
 #define DEFAULT_LIGHT_SENSOR_SCALING    51
+#define DISPLAY_ORIENTATIONS            2
+#define DEFAULT_ORIENTATION             DISPLAY_BOTTOM
 
 struct ConfigGroup1 {
     uint8_t brightness;
     uint8_t light_sensor_scaling;
+    enum orientation orientation;
 };
 
 /* API offsets */
@@ -115,8 +123,11 @@ uint8_t get_brightness(void);
 
 uint8_t get_light_sensor_scaling(void);
 
+enum orientation get_orientation(void);
+
 struct LedFlashConfig * get_flash_config(size_t index);
 void set_flash_config(size_t led_index, uint8_t flash_hz);
+
 
 /* Base API functions */
 bool api_is_provisoned(void);
