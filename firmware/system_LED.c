@@ -27,6 +27,12 @@
 #define _LOG_PFX "LED:     "
 
 #define DEMO_DURATION_MS 30000
+
+/* Brightness averaging buffer */
+#define BRIGHTNESS_AVG_BUFFER 10
+static uint16_t brightness_avg_buffer[BRIGHTNESS_AVG_BUFFER] = {0};
+static size_t brightness_avg_index = 0;
+
 /*
  * LED buffer
  */
@@ -88,6 +94,18 @@ uint8_t _calculate_auto_brightness(void)
     uint16_t brightness = light_sensor * scaling / 100;
     brightness = brightness > APA102_MAX_BRIGHTNESS ? APA102_MAX_BRIGHTNESS : brightness;
     brightness = brightness < APA102_MIN_BRIGHTNESS ? APA102_MIN_BRIGHTNESS : brightness;
+
+    /* update the averaging buffer */
+    brightness_avg_buffer[brightness_avg_index] = brightness;
+    brightness_avg_index = brightness_avg_index >= BRIGHTNESS_AVG_BUFFER - 1 ? 0 : brightness_avg_index + 1;
+
+    /* calculate the average */
+    uint32_t acc = 0;
+    for (size_t i = 0; i < BRIGHTNESS_AVG_BUFFER; i++) {
+            acc += brightness_avg_buffer[i];
+    }
+    brightness = acc / BRIGHTNESS_AVG_BUFFER;
+
     log_trace(_LOG_PFX "Auto brightness: Sensor ADC/scaling/brightness %d/%d/%d\r\n", light_sensor, scaling, brightness);
     return (uint8_t)brightness;
 }

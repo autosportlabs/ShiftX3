@@ -80,7 +80,7 @@ struct LinearGraphThreshold {
 };
 
 #define DEFAULT_BRIGHTNESS              0
-#define DEFAULT_LIGHT_SENSOR_SCALING    51
+#define DEFAULT_LIGHT_SENSOR_SCALING    61
 #define DISPLAY_ORIENTATIONS            2
 #define DEFAULT_ORIENTATION             DISPLAY_BOTTOM
 
