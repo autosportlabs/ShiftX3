@@ -29,7 +29,7 @@
 #define DEMO_DURATION_MS 30000
 
 /* Brightness averaging buffer */
-#define BRIGHTNESS_AVG_BUFFER 10
+#define BRIGHTNESS_AVG_BUFFER 20
 static uint16_t brightness_avg_buffer[BRIGHTNESS_AVG_BUFFER] = {0};
 static size_t brightness_avg_index = 0;
 

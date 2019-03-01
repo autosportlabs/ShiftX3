@@ -75,7 +75,7 @@ void button_check_broadcast_state(void)
     for (size_t i = 0; i < BUTTON_COUNT; i++) {
         bool is_pressed = _button_is_pressed(i);
         if (is_pressed != g_button_states[i]) {
-            log_trace(_LOG_PFX "button state: %d = %d\r\n", i, is_pressed);
+            log_info(_LOG_PFX "button state: %d = %d\r\n", i, is_pressed);
             _broadcast_button_state(i, is_pressed);
             g_button_states[i] = is_pressed;
         }
