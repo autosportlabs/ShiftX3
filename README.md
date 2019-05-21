@@ -4,7 +4,7 @@ Firmware for ShiftX3 - CAN bus controlled sequential shift light and alarm displ
 ![alt text](images/shiftX3.png?raw=true)
 
 # More information
-Visit http://https://wiki.autosportlabs.com/ShiftX3 for full usage and documentation
+Visit https://wiki.autosportlabs.com/ShiftX3 for full usage and documentation
 
 ## CAN termination
 CAN termination is enabled by default. To disable termination, cut the CAN Term jumper on the bottom of ShiftX3.

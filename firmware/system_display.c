@@ -50,14 +50,20 @@
 
 #define DISPLAY_PWM_CONTROL_PORT GPIOB
 #define DISPLAY_PWM_CONTROL_PIN 0
-#define DISPLAY_MIN_BRIGHTNESS 200
+#define DISPLAY_MIN_BRIGHTNESS 125
 #define DISPLAY_MAX_BRIGHTNESS 1000
 
 #define DISPLAY_PWM_CLOCK_FREQUENCY 200000
 #define DISPLAY_PWM_PERIOD 1000
-#define DISPLAY_PWM_SCALING 12
-#define DISPLAY_PWM_OFFSET 200
-#define DISPLAY_PWM_PERCENT_SCALING 27
+#define DISPLAY_PWM_SCALING 2
+#define DISPLAY_PWM_OFFSET 125
+#define DISPLAY_PWM_PERCENT_SCALING 35
+
+/* Brightness averaging buffer */
+#define BRIGHTNESS_AVG_BUFFER 20
+static uint16_t brightness_avg_buffer[BRIGHTNESS_AVG_BUFFER] = {0};
+static size_t brightness_avg_index = 0;
+
 
 static PWMConfig pwmcfg = {
     DISPLAY_PWM_CLOCK_FREQUENCY, /* 200Khz PWM clock frequency*/
@@ -80,16 +86,25 @@ struct port_pin {
 };
 
 #define DISPLAY_SEGMENT_COUNT 7
-#define DISPLAY_SEGMENT_MAPPING {{DISPLAY_SEGMENT_A_PORT, DISPLAY_SEGMENT_A_PIN}, \
+#define DISPLAY_SEGMENT_BOTTOM_MAPPING {{DISPLAY_SEGMENT_A_PORT, DISPLAY_SEGMENT_A_PIN}, \
                            {DISPLAY_SEGMENT_B_PORT, DISPLAY_SEGMENT_B_PIN}, \
                            {DISPLAY_SEGMENT_C_PORT, DISPLAY_SEGMENT_C_PIN}, \
                            {DISPLAY_SEGMENT_D_PORT, DISPLAY_SEGMENT_D_PIN}, \
                            {DISPLAY_SEGMENT_E_PORT, DISPLAY_SEGMENT_E_PIN}, \
                            {DISPLAY_SEGMENT_F_PORT, DISPLAY_SEGMENT_F_PIN}, \
                            {DISPLAY_SEGMENT_G_PORT, DISPLAY_SEGMENT_G_PIN}, \
-};
+}
+#define DISPLAY_SEGMENT_TOP_MAPPING {{DISPLAY_SEGMENT_D_PORT, DISPLAY_SEGMENT_D_PIN}, \
+                           {DISPLAY_SEGMENT_E_PORT, DISPLAY_SEGMENT_E_PIN}, \
+                           {DISPLAY_SEGMENT_F_PORT, DISPLAY_SEGMENT_F_PIN}, \
+                           {DISPLAY_SEGMENT_A_PORT, DISPLAY_SEGMENT_A_PIN}, \
+                           {DISPLAY_SEGMENT_B_PORT, DISPLAY_SEGMENT_B_PIN}, \
+                           {DISPLAY_SEGMENT_C_PORT, DISPLAY_SEGMENT_C_PIN}, \
+                           {DISPLAY_SEGMENT_G_PORT, DISPLAY_SEGMENT_G_PIN}, \
+}
 
-static const struct port_pin display_port_mappings[DISPLAY_SEGMENT_COUNT] = DISPLAY_SEGMENT_MAPPING;
+static const struct port_pin display_port_mappings[DISPLAY_ORIENTATIONS][DISPLAY_SEGMENT_COUNT] = 
+    {DISPLAY_SEGMENT_BOTTOM_MAPPING, DISPLAY_SEGMENT_TOP_MAPPING};
 
 #define CHARMAP { \
         {'0',0x7E}, \
@@ -173,11 +188,12 @@ static const struct char_segment character_mappings[] = CHARMAP;
 
 void display_set_segment(const uint8_t digit, const uint8_t segment, const bool enabled)
 {
-    log_trace(_LOG_PFX "set segment %d: %d %d\r\n", digit, segment, enabled);
+    const enum orientation orientation = get_orientation();
+    log_trace(_LOG_PFX "set segment %d: %d %d %d\r\n", digit, segment, enabled, orientation);
     if (segment >= DISPLAY_SEGMENT_COUNT)
         return;
 
-    const struct port_pin *mapping = &display_port_mappings[segment];
+    const struct port_pin *mapping = &display_port_mappings[orientation][segment];
 
     if (enabled) {
         palClearPad(mapping->port, mapping->pin);
@@ -219,7 +235,7 @@ void system_display_init(void)
 
     /* init ports for segments */
     for (size_t i = 0; i < DISPLAY_SEGMENT_COUNT; i++) {
-        const struct port_pin *mapping = &display_port_mappings[i];
+        const struct port_pin *mapping = &display_port_mappings[DISPLAY_BOTTOM][i];
         palSetPadMode(mapping->port, mapping->pin, PAL_MODE_OUTPUT_OPENDRAIN);
     }
 
@@ -243,5 +259,17 @@ void display_update_brightness(void)
     }
     brightness = brightness > DISPLAY_MAX_BRIGHTNESS ? DISPLAY_MAX_BRIGHTNESS : brightness;
     brightness = brightness < DISPLAY_MIN_BRIGHTNESS ? DISPLAY_MIN_BRIGHTNESS : brightness;
+
+    /* update the averaging buffer */
+    brightness_avg_buffer[brightness_avg_index] = brightness;
+    brightness_avg_index = brightness_avg_index >= BRIGHTNESS_AVG_BUFFER - 1 ? 0 : brightness_avg_index + 1;
+
+    /* calculate the average */
+    uint32_t acc = 0;
+    for (size_t i = 0; i < BRIGHTNESS_AVG_BUFFER; i++) {
+            acc += brightness_avg_buffer[i];
+    }
+    brightness = acc / BRIGHTNESS_AVG_BUFFER;
+
     pwmEnableChannel(&PWMD3, 2, brightness);
 }
