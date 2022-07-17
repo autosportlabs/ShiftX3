@@ -54,7 +54,7 @@ static const CANConfig cancfg_1MB = {
 
 static const CANConfig * _select_can_configuration(void)
 {
-    return palReadPad(GPIOA, ADR2_BAUD_PORT) == PAL_HIGH ? &cancfg_1MB : &cancfg_500K;
+    return palReadPad(GPIOA, ADR2_BAUD_PORT) == PAL_HIGH ? &cancfg_500K : &cancfg_1MB;
 }
 /*
  * Initialize our CAN peripheral
